@@ -42,10 +42,22 @@ class HealthController extends Controller
     private function checkRedis()
     {
         try {
-            \Redis::ping();
+            \Illuminate\Support\Facades\Redis::ping();
             return 'connected';
         } catch (\Exception $e) {
             return 'error: ' . $e->getMessage();
         }
+    }
+
+    /**
+     * PHP Info endpoint
+     */
+    public function phpinfo()
+    {
+        ob_start();
+        phpinfo();
+        $phpinfo = ob_get_clean();
+
+        return response($phpinfo)->header('Content-Type', 'text/html');
     }
 }
