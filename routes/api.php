@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\TimeRecordController;
 
 // Health check endpoints
 Route::get('/health', [HealthController::class, 'check']);
@@ -36,7 +37,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // CEP search (available for all authenticated users)
     Route::post('/search-cep', [EmployeeController::class, 'searchCep']);
     
-
+    // Time record management
+    Route::prefix('time-records')->group(function () {
+        // Employee routes (all authenticated users)
+        Route::post('/', [TimeRecordController::class, 'store']); // Record time
+        Route::get('/my-records', [TimeRecordController::class, 'myRecords']); // My records
+        Route::get('/today', [TimeRecordController::class, 'todayRecords']); // Today's records
+        Route::get('/can-record', [TimeRecordController::class, 'canRecord']); // Check if can record
+        
+        // Admin/Manager routes
+        Route::get('/', [TimeRecordController::class, 'index'])->middleware('role:admin,manager'); // List all records with filters
+    });
 });
 
 // Legacy route for testing
