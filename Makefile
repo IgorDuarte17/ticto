@@ -3,10 +3,10 @@
 
 # Configurações
 DOCKER_COMPOSE = docker-compose -f .setup/docker-compose.yml
-APP_CONTAINER = ticto_app
-DB_CONTAINER = ticto_mysql
-REDIS_CONTAINER = ticto_redis
-NGINX_CONTAINER = ticto_nginx
+APP_CONTAINER = app
+DB_CONTAINER = mysql
+REDIS_CONTAINER = redis
+NGINX_CONTAINER = nginx
 
 # Colors for output
 GREEN = \033[0;32m
@@ -15,7 +15,7 @@ BLUE = \033[0;34m
 RED = \033[0;31m
 NC = \033[0m # No Color
 
-.PHONY: help install start stop restart status logs logs-app logs-db logs-nginx shell root-shell artisan migrate migrate-fresh seed migrate-seed tinker route-list cache-clear optimize composer composer-install composer-update test test-coverage health db-shell redis-shell clean reset info ports
+.PHONY: help install start stop restart status logs logs-app logs-db logs-nginx shell root-shell artisan migrate migrate-fresh seed migrate-seed tinker route-list cache-clear optimize composer composer-install composer-update test test-pest test-services test-unit test-feature test-coverage test-watch health db-shell redis-shell clean reset info ports
 
 # Default target
 .DEFAULT_GOAL := help
@@ -134,13 +134,34 @@ composer-update: ## Atualiza dependências
 
 ## TESTES
 
-test: ## Executa testes
-	@echo "$(BLUE) Executando testes...$(NC)"
+test: ## Executa testes (PHPUnit padrão)
+	@echo "$(BLUE) Executando testes PHPUnit...$(NC)"
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan test
+
+test-pest: ## Executa todos os testes com Pest
+	@echo "$(BLUE) Executando todos os testes com Pest...$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer test:pest
+
+test-services: ## Executa testes das Services
+	@echo "$(BLUE) Executando testes das Services...$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer test:services
+
+test-unit: ## Executa todos os testes unitários
+	@echo "$(BLUE) Executando testes unitários...$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer test:unit
+
+test-feature: ## Executa testes de funcionalidades
+	@echo "$(BLUE) Executando testes de feature...$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer test:feature
 
 test-coverage: ## Executa testes com cobertura
 	@echo "$(BLUE) Executando testes com cobertura...$(NC)"
-	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan test --coverage
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) ./vendor/bin/pest --coverage
+
+test-watch: ## Executa testes em modo watch (observação)
+	@echo "$(BLUE) Executando testes em modo watch...$(NC)"
+	@echo "$(YELLOW)💡 Pressione Ctrl+C para parar$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) ./vendor/bin/pest --watch
 
 ## FERRAMENTAS
 
