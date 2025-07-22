@@ -14,9 +14,21 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('cpf', 11)->unique();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('position');
+            $table->date('birth_date');
+            $table->string('cep', 8);
+            $table->string('street');
+            $table->string('number');
+            $table->string('complement')->nullable();
+            $table->string('neighborhood');
+            $table->string('city');
+            $table->string('state', 2);
+            $table->enum('role', ['admin', 'employee'])->default('employee');
+            $table->foreignId('manager_id')->nullable()->constrained('users')->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
         });
