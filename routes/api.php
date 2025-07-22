@@ -14,7 +14,7 @@ Route::get('/phpinfo', [HealthController::class, 'phpinfo']);
 // Authentication routes
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
-    
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);
@@ -22,9 +22,8 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // Employee management (Admin and Managers only)
     Route::prefix('employees')->middleware('role:admin,manager')->group(function () {
         Route::get('/', [EmployeeController::class, 'index']);
@@ -33,24 +32,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [EmployeeController::class, 'update']);
         Route::delete('/{id}', [EmployeeController::class, 'destroy']);
     });
-    
+
     // CEP search (available for all authenticated users)
     Route::post('/search-cep', [EmployeeController::class, 'searchCep']);
-    
+
     // Time record management
     Route::prefix('time-records')->group(function () {
-        // Employee routes (all authenticated users)
-        Route::post('/', [TimeRecordController::class, 'store']); // Record time
-        Route::get('/my-records', [TimeRecordController::class, 'myRecords']); // My records
-        Route::get('/today', [TimeRecordController::class, 'todayRecords']); // Today's records
-        Route::get('/can-record', [TimeRecordController::class, 'canRecord']); // Check if can record
+        Route::post('/', [TimeRecordController::class, 'store']);
+        Route::get('/my-records', [TimeRecordController::class, 'myRecords']);
+        Route::get('/today', [TimeRecordController::class, 'todayRecords']);
+        Route::get('/can-record', [TimeRecordController::class, 'canRecord']);
         
         // Admin/Manager routes
-        Route::get('/', [TimeRecordController::class, 'index'])->middleware('role:admin,manager'); // List all records with filters
+        Route::get('/', [TimeRecordController::class, 'index'])->middleware('role:admin,manager');
     });
 });
-
-// Legacy route for testing
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
