@@ -15,7 +15,27 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
       
       if (response.data.data) {
         records.value = response.data.data
-        pagination.value = response.data.pagination || response.data.meta || {}
+        
+        if (response.data.meta) {
+          const meta = response.data.meta
+          pagination.value = {
+            current_page: meta.current_page || 1,
+            last_page: meta.total_pages || 1,
+            per_page: meta.per_page || 15,
+            total: meta.total || 0,
+            from: meta.from || 0,
+            to: meta.to || 0
+          }
+        } else {
+          pagination.value = {
+            current_page: 1,
+            last_page: 1,
+            per_page: 15,
+            total: records.value.length,
+            from: records.value.length > 0 ? 1 : 0,
+            to: records.value.length
+          }
+        }
       } else if (Array.isArray(response.data)) {
         records.value = response.data
         pagination.value = {}
@@ -99,11 +119,24 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
       records.value = response.data.data || []
       
       if (response.data.meta) {
-        pagination.value = response.data.meta
-      } else if (response.data.pagination) {
-        pagination.value = response.data.pagination
+        const meta = response.data.meta
+        pagination.value = {
+          current_page: meta.current_page || 1,
+          last_page: meta.total_pages || 1,
+          per_page: meta.per_page || 15,
+          total: meta.total || 0,
+          from: meta.from || 0,
+          to: meta.to || 0
+        }
       } else {
-        pagination.value = {}
+        pagination.value = {
+          current_page: 1,
+          last_page: 1,
+          per_page: 15,
+          total: records.value.length,
+          from: records.value.length > 0 ? 1 : 0,
+          to: records.value.length
+        }
       }
       
       

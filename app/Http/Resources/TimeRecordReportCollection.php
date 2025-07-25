@@ -3,33 +3,37 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 
-class TimeRecordReportCollection extends ResourceCollection
+class TimeRecordReportCollection extends JsonResource
 {
     /**
      * Transform the resource collection into an array.
      */
     public function toArray(Request $request): array
     {
+        $paginator = $this->resource;
+        
         return [
-            'data' => $this->collection->transform(function ($timeRecord) {
+            'data' => $paginator->getCollection()->transform(function ($timeRecord) {
                 return new TimeRecordReportResource($timeRecord);
             }),
             'summary' => $this->getSummary(),
             'meta' => [
-                'total' => $this->total(),
-                'count' => $this->count(),
-                'per_page' => $this->perPage(),
-                'current_page' => $this->currentPage(),
-                'total_pages' => $this->lastPage(),
-                'has_more_pages' => $this->hasMorePages(),
+                'total' => $paginator->total(),
+                'count' => $paginator->count(),
+                'per_page' => $paginator->perPage(),
+                'current_page' => $paginator->currentPage(),
+                'total_pages' => $paginator->lastPage(),
+                'has_more_pages' => $paginator->hasMorePages(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
             ],
             'links' => [
-                'first' => $this->url(1),
-                'last' => $this->url($this->lastPage()),
-                'prev' => $this->previousPageUrl(),
-                'next' => $this->nextPageUrl(),
+                'first' => $paginator->url(1),
+                'last' => $paginator->url($paginator->lastPage()),
+                'prev' => $paginator->previousPageUrl(),
+                'next' => $paginator->nextPageUrl(),
             ],
         ];
     }
@@ -39,7 +43,7 @@ class TimeRecordReportCollection extends ResourceCollection
      */
     private function getSummary(): array
     {
-        $records = $this->collection;
+        $records = $this->resource->getCollection();
         
         return [
             'total_records' => $records->count(),

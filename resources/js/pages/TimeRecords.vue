@@ -192,14 +192,23 @@
             </tbody>
           </table>
 
-          <div v-if="pagination.last_page > 1" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+          <!-- Pagination -->
+          <div v-if="records.length > 0 || pagination.total >= 0" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-700">
-                  Mostrando {{ pagination.from }} a {{ pagination.to }} de {{ pagination.total }} resultados
+                  <span v-if="pagination.total > 0">
+                    Mostrando {{ pagination.from || 1 }} a {{ pagination.to || pagination.total }} de {{ pagination.total }} resultados
+                  </span>
+                  <span v-else-if="records.length > 0">
+                    Mostrando {{ records.length }} resultados
+                  </span>
+                  <span v-else>
+                    Nenhum resultado encontrado
+                  </span>
                 </p>
               </div>
-              <div class="flex space-x-2">
+              <div v-if="pagination.last_page > 1" class="flex space-x-2">
                 <button
                   @click="goToPage(pagination.current_page - 1)"
                   :disabled="pagination.current_page === 1"
@@ -251,9 +260,10 @@ const pagination = computed(() => timeRecordStore.pagination)
 const todayRecords = computed(() => timeRecordStore.todayRecords)
 const employees = computed(() => employeeStore.employees)
 
-const searchRecords = async () => {
-  
-  filters.value.page = 1
+const searchRecords = async (resetPage = true) => {
+  if (resetPage) {
+    filters.value.page = 1
+  }
   
   if (authStore.isEmployee) {
     const result = await timeRecordStore.getFormattedRecords(filters.value)
@@ -264,7 +274,7 @@ const searchRecords = async () => {
 
 const goToPage = (page) => {
   filters.value.page = page
-  searchRecords()
+  searchRecords(false)
 }
 
 const setToday = () => {

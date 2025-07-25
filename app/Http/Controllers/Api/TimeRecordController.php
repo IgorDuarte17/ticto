@@ -69,29 +69,13 @@ class TimeRecordController extends Controller
     {
         try {
             $userId = $request->user()->id;
+            $filters = array_filter($request->validated());
+            $filters['user_id'] = $userId;
             
-            if ($request->has('start_date') && $request->has('end_date')) {
-                $records = $this->timeRecordService->getRecordsByDateRange(
-                    $request->start_date,
-                    $request->end_date,
-                    $userId
-                );
-            } else {
-                $records = $this->timeRecordService->getRecordsByUser($userId);
-            }
+            $perPage = $request->input('per_page', 15);
+            $records = $this->timeRecordService->getPaginatedRecords($filters, $perPage);
 
-            return response()->json([
-                'message' => 'Seus registros de ponto',
-                'status' => 'success',
-                'data' => TimeRecordResource::collection($records),
-                'meta' => [
-                    'total_records' => $records->count(),
-                    'date_range' => [
-                        'start' => $records->min('recorded_at')?->format('d/m/Y'),
-                        'end' => $records->max('recorded_at')?->format('d/m/Y'),
-                    ]
-                ]
-            ]);
+            return new TimeRecordReportCollection($records);
 
         } catch (ValidationException $e) {
             return response()->json([
