@@ -12,7 +12,7 @@ class UpdateEmployeeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && in_array($this->user()->role, ['admin', 'manager']);
+        return $this->user() && $this->user()->role === 'admin';
     }
 
     /**
@@ -23,15 +23,19 @@ class UpdateEmployeeRequest extends FormRequest
         $employeeId = $this->route('id');
         
         return [
-            'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'cpf' => ['sometimes', 'required', 'string', 'size:11', Rule::unique('users', 'cpf')->ignore($employeeId)],
-            'email' => ['sometimes', 'required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($employeeId)],
-            'password' => ['sometimes', 'required', 'string', 'min:8'],
-            'position' => ['sometimes', 'required', 'string', 'max:255'],
-            'birth_date' => ['sometimes', 'required', 'date', 'before:today'],
-            'cep' => ['sometimes', 'required', 'string', 'size:8'],
-            'address_number' => ['sometimes', 'required', 'string', 'max:10'],
-            'address_complement' => ['nullable', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'cpf' => ['required', 'string', 'size:11', Rule::unique('users', 'cpf')->ignore($employeeId)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($employeeId)],
+            'password' => ['nullable', 'string', 'min:8'],
+            'position' => ['required', 'string', 'max:255'],
+            'birth_date' => ['required', 'date', 'before:today'],
+            'cep' => ['required', 'string', 'size:8'],
+            'street' => ['required', 'string', 'max:255'],
+            'number' => ['required', 'string', 'max:10'],
+            'complement' => ['nullable', 'string', 'max:255'],
+            'neighborhood' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'size:2'],
         ];
     }
 
@@ -71,12 +75,28 @@ class UpdateEmployeeRequest extends FormRequest
             'cep.string' => 'O CEP deve ser um texto.',
             'cep.size' => 'O CEP deve ter exatamente 8 dígitos.',
             
-            'address_number.required' => 'O número do endereço é obrigatório.',
-            'address_number.string' => 'O número do endereço deve ser um texto.',
-            'address_number.max' => 'O número do endereço não pode ter mais de 10 caracteres.',
+            'street.required' => 'O endereço é obrigatório.',
+            'street.string' => 'O endereço deve ser um texto.',
+            'street.max' => 'O endereço não pode ter mais de 255 caracteres.',
             
-            'address_complement.string' => 'O complemento do endereço deve ser um texto.',
-            'address_complement.max' => 'O complemento do endereço não pode ter mais de 255 caracteres.',
+            'number.required' => 'O número do endereço é obrigatório.',
+            'number.string' => 'O número do endereço deve ser um texto.',
+            'number.max' => 'O número do endereço não pode ter mais de 10 caracteres.',
+            
+            'complement.string' => 'O complemento do endereço deve ser um texto.',
+            'complement.max' => 'O complemento do endereço não pode ter mais de 255 caracteres.',
+            
+            'neighborhood.required' => 'O bairro é obrigatório.',
+            'neighborhood.string' => 'O bairro deve ser um texto.',
+            'neighborhood.max' => 'O bairro não pode ter mais de 255 caracteres.',
+            
+            'city.required' => 'A cidade é obrigatória.',
+            'city.string' => 'A cidade deve ser um texto.',
+            'city.max' => 'A cidade não pode ter mais de 255 caracteres.',
+            
+            'state.required' => 'O estado é obrigatório.',
+            'state.string' => 'O estado deve ser um texto.',
+            'state.size' => 'O estado deve ter exatamente 2 caracteres.',
         ];
     }
 
@@ -85,14 +105,12 @@ class UpdateEmployeeRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // Remove formatação do CPF se houver
         if ($this->has('cpf')) {
             $this->merge([
                 'cpf' => preg_replace('/[^0-9]/', '', $this->cpf)
             ]);
         }
 
-        // Remove formatação do CEP se houver
         if ($this->has('cep')) {
             $this->merge([
                 'cep' => preg_replace('/[^0-9]/', '', $this->cep)

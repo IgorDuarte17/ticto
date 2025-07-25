@@ -28,6 +28,7 @@ class EmployeeController extends Controller
         
         $filters = [
             'search' => $request->input('search'),
+            'position' => $request->input('position'),
         ];
         
         if ($user->role === 'admin') {
@@ -43,9 +44,12 @@ class EmployeeController extends Controller
     public function store(StoreEmployeeRequest $request)
     {
         try {
-            $addressData = $this->viaCepService->getAddressByCep($request->cep);
+            $employeeData = $request->validated();
             
-            $employeeData = array_merge($request->validated(), $addressData);
+            if (empty($employeeData['street'])) {
+                $addressData = $this->viaCepService->getAddressByCep($request->cep);
+                $employeeData = array_merge($employeeData, $addressData);
+            }
             
             $employee = $this->userService->createEmployee(
                 $employeeData,
@@ -109,9 +113,26 @@ class EmployeeController extends Controller
         try {
             $updateData = $request->validated();
             
-            if ($request->has('cep')) {
-                $addressData = $this->viaCepService->getAddressByCep($request->cep);
-                $updateData = array_merge($updateData, $addressData);
+            $employee = $this->userService->findById($id);
+            if (!$employee) {
+                return response()->json([
+                    'message' => 'Funcionário não encontrado',
+                    'status' => 'error'
+                ], 404);
+            }
+            
+            $shouldFetchAddress = empty($updateData['street']) || 
+                                 ($request->has('cep') && $request->cep !== $employee->cep);
+            
+            if ($shouldFetchAddress && $request->has('cep')) {
+                try {
+                    $addressData = $this->viaCepService->getAddressByCep($request->cep);
+                    if (empty($updateData['street'])) $updateData['street'] = $addressData['street'];
+                    if (empty($updateData['neighborhood'])) $updateData['neighborhood'] = $addressData['neighborhood'];
+                    if (empty($updateData['city'])) $updateData['city'] = $addressData['city'];
+                    if (empty($updateData['state'])) $updateData['state'] = $addressData['state'];
+                } catch (\Exception $e) {
+                }
             }
             
             $employee = $this->userService->updateEmployee($id, $updateData);
@@ -129,6 +150,11 @@ class EmployeeController extends Controller
                 'status' => 'error',
                 'errors' => $e->errors()
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro interno do servidor',
+                'status' => 'error'
+            ], 500);
         }
     }
 
