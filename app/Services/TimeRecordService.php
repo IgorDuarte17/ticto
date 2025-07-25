@@ -33,11 +33,10 @@ class TimeRecordService
             ]);
         }
         
-        // Verificar se já registrou ponto nos últimos 5 minutos (evitar registros duplicados acidentais)
         $latestRecord = $this->timeRecordRepository->getLatestByUser($userId);
-        if ($latestRecord && $latestRecord->recorded_at->diffInMinutes(now()) < 5) {
+        if ($latestRecord && $latestRecord->recorded_at->diffInMinutes(now()) < 1) {
             throw ValidationException::withMessages([
-                'time' => ['Você já registrou ponto recentemente. Aguarde alguns minutos.']
+                'time' => ['Você já registrou ponto recentemente. Aguarde 1 minuto.']
             ]);
         }
         
@@ -164,11 +163,11 @@ class TimeRecordService
         }
         
         $latestRecord = $this->timeRecordRepository->getLatestByUser($userId);
-        if ($latestRecord && $latestRecord->recorded_at->diffInMinutes(now()) < 5) {
+        if ($latestRecord && $latestRecord->recorded_at->diffInMinutes(now()) < 1) {
             return [
                 'can_record' => false,
-                'message' => 'Aguarde alguns minutos antes de registrar novamente.',
-                'next_allowed_at' => $latestRecord->recorded_at->addMinutes(5)->format('H:i:s')
+                'message' => 'Aguarde 1 minuto antes de registrar novamente.',
+                'next_allowed_at' => $latestRecord->recorded_at->addMinutes(1)->format('H:i:s')
             ];
         }
         
@@ -176,5 +175,10 @@ class TimeRecordService
             'can_record' => true,
             'message' => 'Você pode registrar seu ponto agora.'
         ];
+    }
+    
+    public function getAllTodayRecords(): Collection
+    {
+        return $this->timeRecordRepository->getAllTodayRecords();
     }
 }

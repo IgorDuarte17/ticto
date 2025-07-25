@@ -23,4 +23,6 @@ interface TimeRecordRepositoryInterface
     public function getTodayRecordsByUser(int $userId): Collection;
     
     public function getLatestByUser(int $userId): ?TimeRecord;
+
+    public function getAllTodayRecords(): Collection;
 }

@@ -93,4 +93,14 @@ class TimeRecordRepository implements TimeRecordRepositoryInterface
                          ->orderBy('recorded_at', 'desc')
                          ->first();
     }
+    
+    public function getAllTodayRecords(): Collection
+    {
+        $today = Carbon::today();
+        
+        return TimeRecord::whereDate('recorded_at', $today)
+                         ->with(['user', 'user.manager'])
+                         ->orderBy('recorded_at', 'desc')
+                         ->get();
+    }
 }
