@@ -65,7 +65,7 @@
               </p>
               
               <p v-if="recordStatus.next_allowed_at" class="text-xs text-gray-500 mt-1">
-                Próximo registro: {{ recordStatus.next_allowed_at }}
+                Próximo registro: {{ formatNextAllowedTime(recordStatus.next_allowed_at) }}
               </p>
             </div>
           </div>
@@ -347,6 +347,29 @@ const formatDateTime = (datetime) => {
   } catch (error) {
     console.error('Erro ao formatar data:', error, 'input:', datetime)
     return 'Data inválida'
+  }
+}
+
+const formatNextAllowedTime = (timeString) => {
+  try {
+    if (!timeString) return '--:--'
+    
+    if (timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
+      return timeString.substring(0, 5)
+    }
+    
+    const date = new Date(timeString)
+    if (isNaN(date.getTime())) {
+      return timeString
+    }
+    
+    return date.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (error) {
+    console.error('Erro ao formatar próximo horário:', error, 'input:', timeString)
+    return timeString
   }
 }
 

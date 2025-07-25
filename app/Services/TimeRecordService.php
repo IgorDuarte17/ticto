@@ -164,10 +164,14 @@ class TimeRecordService
         
         $latestRecord = $this->timeRecordRepository->getLatestByUser($userId);
         if ($latestRecord && $latestRecord->recorded_at->diffInMinutes(now()) < 1) {
+            $nextAllowed = $latestRecord->recorded_at->copy()
+                ->setTimezone('America/Sao_Paulo')
+                ->addMinutes(1);
+                
             return [
                 'can_record' => false,
                 'message' => 'Aguarde 1 minuto antes de registrar novamente.',
-                'next_allowed_at' => $latestRecord->recorded_at->addMinutes(1)->format('H:i:s')
+                'next_allowed_at' => $nextAllowed->format('H:i:s')
             ];
         }
         
