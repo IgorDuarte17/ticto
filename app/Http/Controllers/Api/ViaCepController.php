@@ -14,7 +14,50 @@ class ViaCepController extends Controller
     ) {}
 
     /**
-     * Consultar endereço por CEP
+     * @OA\Get(
+     *     path="/via-cep/{cep}",
+     *     tags={"Utilitários"},
+     *     summary="Consultar endereço por CEP",
+     *     description="Consulta endereço através da API ViaCEP (rota pública)",
+     *     @OA\Parameter(
+     *         name="cep",
+     *         in="path",
+     *         description="CEP para consulta (formato: 12345678 - apenas números)",
+     *         required=true,
+     *         @OA\Schema(type="string", pattern="^[0-9]{8}$", example="01310100")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Endereço encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="cep", type="string", example="01310-100"),
+     *                 @OA\Property(property="logradouro", type="string", example="Avenida Paulista"),
+     *                 @OA\Property(property="complemento", type="string", example=""),
+     *                 @OA\Property(property="bairro", type="string", example="Bela Vista"),
+     *                 @OA\Property(property="localidade", type="string", example="São Paulo"),
+     *                 @OA\Property(property="uf", type="string", example="SP")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="CEP inválido",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="CEP inválido")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="CEP não encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="CEP não encontrado")
+     *         )
+     *     )
+     * )
      */
     public function getAddress(string $cep): JsonResponse
     {

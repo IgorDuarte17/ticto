@@ -21,6 +21,56 @@ class EmployeeController extends Controller
         private ViaCepService $viaCepService
     ) {}
 
+    /**
+     * @OA\Get(
+     *     path="/employees",
+     *     tags={"Funcionários"},
+     *     summary="Listar funcionários",
+     *     description="Lista funcionários com filtros e paginação",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Número da página",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Funcionários por página",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Buscar por nome ou email",
+     *         required=false,
+     *         @OA\Schema(type="string", example="João")
+     *     ),
+     *     @OA\Parameter(
+     *         name="position",
+     *         in="query",
+     *         description="Filtrar por cargo",
+     *         required=false,
+     *         @OA\Schema(type="string", example="developer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de funcionários",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="links", type="object"),
+     *             @OA\Property(property="meta", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token inválido"
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
         $user = $request->user();
@@ -41,6 +91,52 @@ class EmployeeController extends Controller
         return new UserCollection($employees);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/employees",
+     *     tags={"Funcionários"},
+     *     summary="Criar funcionário",
+     *     description="Cria um novo funcionário no sistema",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","email","cpf","position","birth_date"},
+     *             @OA\Property(property="name", type="string", example="João Silva"),
+     *             @OA\Property(property="email", type="string", format="email", example="joao@exemplo.com"),
+     *             @OA\Property(property="cpf", type="string", example="123.456.789-00"),
+     *             @OA\Property(property="position", type="string", example="developer"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1990-01-01"),
+     *             @OA\Property(property="phone", type="string", example="(11) 99999-9999"),
+     *             @OA\Property(property="cep", type="string", example="01234-567"),
+     *             @OA\Property(property="street", type="string", example="Rua das Flores"),
+     *             @OA\Property(property="number", type="string", example="123"),
+     *             @OA\Property(property="complement", type="string", example="Apto 45"),
+     *             @OA\Property(property="neighborhood", type="string", example="Centro"),
+     *             @OA\Property(property="city", type="string", example="São Paulo"),
+     *             @OA\Property(property="state", type="string", example="SP"),
+     *             @OA\Property(property="manager_id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Funcionário criado com sucesso",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Funcionário criado com sucesso"),
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erro de validação",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
     public function store(StoreEmployeeRequest $request)
     {
         try {
@@ -71,6 +167,47 @@ class EmployeeController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/employees/{id}",
+     *     tags={"Funcionários"},
+     *     summary="Visualizar funcionário",
+     *     description="Retorna os dados de um funcionário específico",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID do funcionário",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Funcionário encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Funcionário encontrado"),
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Sem permissão",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Sem permissão para visualizar este funcionário"),
+     *             @OA\Property(property="status", type="string", example="error")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Funcionário não encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Funcionário não encontrado"),
+     *             @OA\Property(property="status", type="string", example="error")
+     *         )
+     *     )
+     * )
+     */
     public function show(Request $request, int $id)
     {
         $user = $request->user();
@@ -108,6 +245,67 @@ class EmployeeController extends Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/employees/{id}",
+     *     tags={"Funcionários"},
+     *     summary="Atualizar funcionário",
+     *     description="Atualiza os dados de um funcionário existente",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID do funcionário",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="João Silva"),
+     *             @OA\Property(property="email", type="string", format="email", example="joao@exemplo.com"),
+     *             @OA\Property(property="cpf", type="string", example="123.456.789-00"),
+     *             @OA\Property(property="position", type="string", example="developer"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1990-01-01"),
+     *             @OA\Property(property="phone", type="string", example="(11) 99999-9999"),
+     *             @OA\Property(property="cep", type="string", example="01234-567"),
+     *             @OA\Property(property="street", type="string", example="Rua das Flores"),
+     *             @OA\Property(property="number", type="string", example="123"),
+     *             @OA\Property(property="complement", type="string", example="Apto 45"),
+     *             @OA\Property(property="neighborhood", type="string", example="Centro"),
+     *             @OA\Property(property="city", type="string", example="São Paulo"),
+     *             @OA\Property(property="state", type="string", example="SP"),
+     *             @OA\Property(property="manager_id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Funcionário atualizado com sucesso",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Funcionário atualizado com sucesso"),
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Funcionário não encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Funcionário não encontrado"),
+     *             @OA\Property(property="status", type="string", example="error")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erro de validação",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Erro ao atualizar funcionário"),
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
     public function update(UpdateEmployeeRequest $request, int $id)
     {
         try {
@@ -158,6 +356,43 @@ class EmployeeController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/employees/{id}",
+     *     tags={"Funcionários"},
+     *     summary="Deletar funcionário",
+     *     description="Remove um funcionário do sistema",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID do funcionário",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Funcionário deletado com sucesso",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Funcionário deletado com sucesso"),
+     *             @OA\Property(property="status", type="string", example="success")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erro ao deletar funcionário",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Erro ao deletar funcionário"),
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token inválido"
+     *     )
+     * )
+     */
     public function destroy(Request $request, int $id)
     {
         try {
@@ -177,6 +412,50 @@ class EmployeeController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/search-cep",
+     *     tags={"Funcionários"},
+     *     summary="Buscar endereço por CEP",
+     *     description="Busca dados de endereço através do CEP para preenchimento automático",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"cep"},
+     *             @OA\Property(property="cep", type="string", example="01234-567", description="CEP para busca")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Endereço encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Endereço encontrado"),
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="cep", type="string", example="01234-567"),
+     *                 @OA\Property(property="street", type="string", example="Rua das Flores"),
+     *                 @OA\Property(property="neighborhood", type="string", example="Centro"),
+     *                 @OA\Property(property="city", type="string", example="São Paulo"),
+     *                 @OA\Property(property="state", type="string", example="SP")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="CEP inválido ou não encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Erro ao buscar CEP"),
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token inválido"
+     *     )
+     * )
+     */
     public function searchCep(SearchCepRequest $request)
     {
         try {
