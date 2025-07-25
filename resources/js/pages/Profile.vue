@@ -41,36 +41,54 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700">CPF</label>
                 <input
+                  v-if="isAdmin"
+                  v-model="profileForm.cpf"
+                  type="text"
+                  maxlength="14"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  :class="{ 'border-red-300': profileErrors.cpf }"
+                  @input="formatCpfField"
+                />
+                <input
+                  v-else
                   :value="formatCpf(authStore.user?.cpf)"
                   type="text"
                   readonly
                   class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm"
                 />
-                <p class="mt-1 text-xs text-gray-500">O CPF não pode ser alterado</p>
+                <p v-if="!isAdmin" class="mt-1 text-xs text-gray-500">O CPF não pode ser alterado</p>
+                <p v-if="profileErrors.cpf" class="mt-1 text-sm text-red-600">{{ profileErrors.cpf[0] }}</p>
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700">Idade</label>
+                <label class="block text-sm font-medium text-gray-700">Data de Nascimento</label>
                 <input
-                  v-model.number="profileForm.age"
-                  type="number"
-                  min="16"
-                  max="100"
+                  v-model="profileForm.birth_date"
+                  type="date"
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  :class="{ 'border-red-300': profileErrors.age }"
+                  :class="{ 'border-red-300': profileErrors.birth_date }"
                 />
-                <p v-if="profileErrors.age" class="mt-1 text-sm text-red-600">{{ profileErrors.age[0] }}</p>
+                <p v-if="profileErrors.birth_date" class="mt-1 text-sm text-red-600">{{ profileErrors.birth_date[0] }}</p>
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700">Cargo</label>
                 <input
+                  v-if="isAdmin"
+                  v-model="profileForm.position"
+                  type="text"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  :class="{ 'border-red-300': profileErrors.position }"
+                />
+                <input
+                  v-else
                   :value="authStore.user?.position"
                   type="text"
                   readonly
                   class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm"
                 />
-                <p class="mt-1 text-xs text-gray-500">O cargo é definido pelo administrador</p>
+                <p v-if="!isAdmin" class="mt-1 text-xs text-gray-500">O cargo é definido pelo administrador</p>
+                <p v-if="profileErrors.position" class="mt-1 text-sm text-red-600">{{ profileErrors.position[0] }}</p>
               </div>
 
               <div>
@@ -241,16 +259,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { viaCepService } from '../services/viaCep'
 
 const authStore = useAuthStore()
 
+const isAdmin = computed(() => authStore.user?.role === 'admin')
+
 const profileForm = reactive({
   name: '',
   email: '',
-  age: '',
+  cpf: '',
+  position: '',
+  birth_date: '',
   cep: '',
   address: '',
   neighborhood: '',
@@ -274,14 +296,18 @@ const loadingProfile = ref(false)
 const loadingPassword = ref(false)
 const loadingCep = ref(false)
 
-const loadUserData = () => {
+const loadUserData = async () => {
+  await authStore.fetchUser()
+  
   if (authStore.user) {
     Object.assign(profileForm, {
       name: authStore.user.name || '',
       email: authStore.user.email || '',
-      age: authStore.user.age || '',
+      cpf: authStore.user.cpf ? authStore.user.cpf.replace(/\D/g, '') : '',
+      position: authStore.user.position || '',
+      birth_date: authStore.user.birth_date || '',
       cep: authStore.user.cep || '',
-      address: authStore.user.address || '',
+      address: authStore.user.street || '',
       neighborhood: authStore.user.neighborhood || '',
       city: authStore.user.city || '',
       state: authStore.user.state || ''
@@ -296,11 +322,30 @@ const updateProfile = async () => {
   loadingProfile.value = true
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const profileData = {
+      name: profileForm.name,
+      email: profileForm.email,
+      birth_date: profileForm.birth_date,
+      cep: profileForm.cep.replace(/\D/g, ''),
+      street: profileForm.address,
+      neighborhood: profileForm.neighborhood,
+      city: profileForm.city,
+      state: profileForm.state
+    }
+
+    if (isAdmin.value) {
+      profileData.cpf = profileForm.cpf.replace(/\D/g, '')
+      profileData.position = profileForm.position
+    }
+
+    const result = await authStore.updateProfile(profileData)
     
-    profileSuccessMessage.value = 'Perfil atualizado com sucesso!'
-    
-    Object.assign(authStore.user, profileForm)
+    if (result.success) {
+      profileSuccessMessage.value = result.message
+    } else {
+      profileErrorMessage.value = result.message
+      profileErrors.value = result.errors
+    }
     
   } catch (error) {
     profileErrorMessage.value = 'Erro ao atualizar perfil'
@@ -353,6 +398,16 @@ const formatCepField = (event) => {
   }
 }
 
+const formatCpfField = (event) => {
+  let value = event.target.value.replace(/\D/g, '')
+  if (value.length <= 11) {
+    value = value.replace(/(\d{3})(\d)/, '$1.$2')
+    value = value.replace(/(\d{3})(\d)/, '$1.$2')
+    value = value.replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    profileForm.cpf = value
+  }
+}
+
 const searchCep = async () => {
   if (profileForm.cep && profileForm.cep.length >= 8) {
     loadingCep.value = true
@@ -384,7 +439,7 @@ const getRoleLabel = (role) => {
   return labels[role] || role
 }
 
-onMounted(() => {
-  loadUserData()
+onMounted(async () => {
+  await loadUserData()
 })
 </script>

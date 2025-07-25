@@ -59,9 +59,9 @@ export const useAuthStore = defineStore('auth', () => {
     
     try {
       const response = await api.get('/auth/me')
-      user.value = response.data
+      user.value = response.data.user
       
-      localStorage.setItem('user', JSON.stringify(response.data))
+      localStorage.setItem('user', JSON.stringify(response.data.user))
     } catch (error) {
       console.error('Erro ao buscar usuário:', error)
       logout()
@@ -76,6 +76,23 @@ export const useAuthStore = defineStore('auth', () => {
       return { 
         success: false, 
         message: error.response?.data?.message || 'Erro ao alterar senha' 
+      }
+    }
+  }
+
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await api.put('/auth/profile', profileData)
+      user.value = response.data.user
+      
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+      
+      return { success: true, message: response.data.message }
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Erro ao atualizar perfil',
+        errors: error.response?.data?.errors || {}
       }
     }
   }
@@ -104,6 +121,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     fetchUser,
     changePassword,
+    updateProfile,
     initialize
   }
 })

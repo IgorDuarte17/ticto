@@ -207,4 +207,101 @@ class AuthController extends Controller
             'user' => new UserResource($user)
         ]);
     }
+
+    /**
+     * @OA\Put(
+     *     path="/auth/profile",
+     *     tags={"Autenticação"},
+     *     summary="Atualizar perfil do usuário autenticado",
+     *     description="Permite ao usuário autenticado atualizar seus próprios dados",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email"},
+     *             @OA\Property(property="name", type="string", example="João Silva"),
+     *             @OA\Property(property="email", type="string", format="email", example="joao@example.com"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1990-01-15"),
+     *             @OA\Property(property="cpf", type="string", example="12345678901", description="Apenas para administradores"),
+     *             @OA\Property(property="position", type="string", example="Desenvolvedor", description="Apenas para administradores"),
+     *             @OA\Property(property="cep", type="string", example="12345678"),
+     *             @OA\Property(property="street", type="string", example="Rua das Flores"),
+     *             @OA\Property(property="number", type="string", example="123"),
+     *             @OA\Property(property="complement", type="string", example="Apto 45"),
+     *             @OA\Property(property="neighborhood", type="string", example="Centro"),
+     *             @OA\Property(property="city", type="string", example="São Paulo"),
+     *             @OA\Property(property="state", type="string", example="SP")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Perfil atualizado com sucesso",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Perfil atualizado com sucesso"),
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="user", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erro de validação",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Erro de validação"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token inválido"
+     *     )
+     * )
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            $rules = [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'birth_date' => 'nullable|date|before:today',
+                'cep' => 'nullable|string|size:8',
+                'street' => 'nullable|string|max:255',
+                'number' => 'nullable|string|max:20',
+                'complement' => 'nullable|string|max:255',
+                'neighborhood' => 'nullable|string|max:255',
+                'city' => 'nullable|string|max:255',
+                'state' => 'nullable|string|size:2',
+            ];
+
+            // Apenas administradores podem alterar CPF e cargo
+            if ($user->role === 'admin') {
+                $rules['cpf'] = 'nullable|string|size:11|unique:users,cpf,' . $user->id;
+                $rules['position'] = 'nullable|string|max:255';
+            }
+
+            $validated = $request->validate($rules);
+
+            $user->update($validated);
+            $user->load('manager');
+
+            return response()->json([
+                'message' => 'Perfil atualizado com sucesso',
+                'status' => 'success',
+                'user' => new UserResource($user)
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Erro de validação',
+                'status' => 'error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro interno do servidor',
+                'status' => 'error'
+            ], 500);
+        }
+    }
 }
