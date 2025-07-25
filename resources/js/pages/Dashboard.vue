@@ -35,14 +35,14 @@
             <div class="mt-5">
               <button
                 v-if="authStore.isEmployee"
-                @click="recordTime"
-                :disabled="!canRecord || timeRecordStore.loading"
+                @click.prevent="recordTime"
+                :disabled="!canRecord || timeRecordStore.loading || isProcessingRecord"
                 class="w-full py-2 px-4 rounded-lg transition-all duration-200 font-medium"
-                :class="canRecord && !timeRecordStore.loading 
+                :class="canRecord && !timeRecordStore.loading && !isProcessingRecord
                   ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105' 
                   : 'bg-gray-400 text-gray-200 cursor-not-allowed'"
               >
-                <span v-if="timeRecordStore.loading" class="flex items-center justify-center">
+                <span v-if="timeRecordStore.loading || isProcessingRecord" class="flex items-center justify-center">
                   <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -212,6 +212,7 @@ const currentTime = ref('')
 const canRecord = ref(false)
 const recordStatus = ref({})
 const recentRecords = ref([])
+const isProcessingRecord = ref(false)
 
 const todayRecords = computed(() => timeRecordStore.todayRecords)
 const todayRecordsCount = computed(() => todayRecords.value.length)
@@ -222,6 +223,10 @@ const updateCurrentTime = () => {
 }
 
 const recordTime = async () => {
+  if (isProcessingRecord.value) {
+    console.log('🔵 Já processando, ignorando clique')
+    return
+  }
   
   if (!authStore.isEmployee) {
     alert('Apenas funcionários podem registrar ponto!')
@@ -233,24 +238,67 @@ const recordTime = async () => {
     return
   }
   
-  const result = await timeRecordStore.recordTime()
+  isProcessingRecord.value = true
+  canRecord.value = false
   
-  if (result.success) {
-    await checkCanRecord()
-    await timeRecordStore.fetchTodayRecords()
-    await loadRecentRecords()
-    alert('✅ Ponto registrado com sucesso às ' + new Date().toLocaleTimeString('pt-BR'))
-  } else {
-    console.error('Erro no registro:', result)
-    alert('❌ Erro: ' + (result.message || 'Erro ao registrar ponto'))
+  recordStatus.value = {
+    can_record: false,
+    message: 'Registrando ponto...',
+    next_allowed_at: null
   }
   
+  try {
+    const result = await timeRecordStore.recordTime()
+    
+    if (result.success) {
+      await timeRecordStore.fetchTodayRecords()
+      await loadRecentRecords()
+      await checkCanRecord()
+      
+    } else {
+      let errorMessage = result.message || 'Erro ao registrar ponto'
+      
+      if (result.errors) {
+        const firstError = Object.values(result.errors)[0]
+        if (firstError && firstError.length > 0) {
+          errorMessage = firstError[0]
+        }
+      }
+      
+      alert('❌ Erro: ' + errorMessage)
+      await checkCanRecord() // Recarregar o estado real
+    }
+    
+  } catch (error) {
+    alert('❌ Erro inesperado ao registrar ponto')
+    await checkCanRecord()
+  } finally {
+    isProcessingRecord.value = false
+  }
 }
 
 const checkCanRecord = async () => {
   if (authStore.isEmployee) {
     recordStatus.value = await timeRecordStore.canRecordTime()
     canRecord.value = recordStatus.value.can_record
+    
+    isProcessingRecord.value = false
+
+    if (!recordStatus.value.can_record && recordStatus.value.next_allowed_at) {
+      const now = new Date()
+      const nextTime = new Date()
+      
+      const timeParts = recordStatus.value.next_allowed_at.split(':')
+      nextTime.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]), parseInt(timeParts[2] || '0'), 0)
+      
+      if (nextTime > now) {
+        const waitTime = nextTime.getTime() - now.getTime()
+        
+        setTimeout(async () => {
+          await checkCanRecord()
+        }, waitTime + 1000) // +1 segundo para garantir
+      }
+    }
   }
 }
 

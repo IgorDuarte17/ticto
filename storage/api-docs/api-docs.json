@@ -314,6 +314,126 @@
                 ]
             }
         },
+        "/cache/stats": {
+            "get": {
+                "tags": [
+                    "Utilitários"
+                ],
+                "summary": "Estatísticas do cache",
+                "description": "Retorna estatísticas de uso do cache Redis",
+                "operationId": "7c7c6e6521c743d8b05d4488e70be0d5",
+                "responses": {
+                    "200": {
+                        "description": "Estatísticas do cache",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "memory_used": {
+                                                    "type": "string",
+                                                    "example": "1.5M"
+                                                },
+                                                "memory_peak": {
+                                                    "type": "string",
+                                                    "example": "2.1M"
+                                                },
+                                                "keys_count": {
+                                                    "type": "integer",
+                                                    "example": 150
+                                                },
+                                                "connected": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token inválido"
+                    },
+                    "403": {
+                        "description": "Acesso negado (apenas admin)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/cache/clear": {
+            "delete": {
+                "tags": [
+                    "Utilitários"
+                ],
+                "summary": "Limpar cache",
+                "description": "Limpa o cache de registros de ponto",
+                "operationId": "f02567528c35fcf86d921480ace2e0a6",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "description": "ID do usuário (opcional)",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cache limpo com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cache limpo com sucesso"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token inválido"
+                    },
+                    "403": {
+                        "description": "Acesso negado (apenas admin)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/employees": {
             "get": {
                 "tags": [

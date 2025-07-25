@@ -54,15 +54,23 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
   }
 
   const recordTime = async () => {
+    loading.value = true
     try {
       const response = await api.post('/time-records')
-      todayRecords.value.push(response.data)
+      
+      if (response.data.data) {
+        todayRecords.value.unshift(response.data.data)
+      }
+      
       return { success: true, data: response.data }
     } catch (error) {
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Erro ao registrar ponto' 
+        message: error.response?.data?.message || 'Erro ao registrar ponto',
+        errors: error.response?.data?.errors || null
       }
+    } finally {
+      loading.value = false
     }
   }
 
@@ -87,11 +95,30 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
   const canRecordTime = async () => {
     try {
       const response = await api.get('/time-records/can-record')
-      return response.data
-    } catch (error) {
+
+      return {
+        can_record: response.data.can_record || false,
+        message: response.data.message || 'Status desconhecido',
+        next_allowed_at: response.data.next_allowed_at || null,
+        last_record_at: response.data.last_record_at || null
+      }
+    } catch (error) {      
+      let errorMessage = 'Erro ao verificar permissão'
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Sessão expirada. Faça login novamente.'
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Sem permissão para registrar ponto.'
+      } else if (error.message) {
+        errorMessage += ': ' + error.message
+      }
+      
       return {
         can_record: false,
-        message: 'Erro ao verificar permissão'
+        message: errorMessage,
+        next_allowed_at: null
       }
     }
   }
