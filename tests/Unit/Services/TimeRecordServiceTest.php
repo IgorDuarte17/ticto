@@ -100,7 +100,7 @@ describe('TimeRecordService', function () {
             $recentRecord = new TimeRecord([
                 'id' => 1,
                 'user_id' => $userId,
-                'recorded_at' => now()->subMinutes(2) // 2 minutos atrás
+                'recorded_at' => now()->subSeconds(30) // 30 segundos atrás (menos de 1 minuto)
             ]);
 
             $this->userRepository

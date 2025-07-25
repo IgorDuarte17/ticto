@@ -28,12 +28,12 @@ describe('ViaCepService', function () {
             $result = $this->service->getAddressByCep($cep);
 
             expect($result)->toBe([
-                'cep' => '01310-100',
-                'address' => 'Avenida Paulista',
+                'cep' => '01310100',
+                'street' => 'Avenida Paulista',
                 'neighborhood' => 'Bela Vista',
                 'city' => 'São Paulo',
                 'state' => 'SP',
-                'complement' => ''
+                'complement' => '',
             ]);
         });
 
@@ -55,12 +55,12 @@ describe('ViaCepService', function () {
             $result = $this->service->getAddressByCep($cep);
 
             expect($result)->toBe([
-                'cep' => '01310-100',
-                'address' => 'Avenida Paulista',
+                'cep' => '01310100',
+                'street' => 'Avenida Paulista',
                 'neighborhood' => 'Bela Vista',
                 'city' => 'São Paulo',
                 'state' => 'SP',
-                'complement' => ''
+                'complement' => '',
             ]);
         });
 
@@ -132,12 +132,12 @@ describe('ViaCepService', function () {
             $result = $this->service->getAddressByCep($cep);
 
             expect($result)->toBe([
-                'cep' => '01310-100',
-                'address' => '',
+                'cep' => '01310100',
+                'street' => '',
                 'neighborhood' => '',
                 'city' => 'São Paulo',
                 'state' => 'SP',
-                'complement' => ''
+                'complement' => '',
             ]);
         });
 
@@ -158,7 +158,7 @@ describe('ViaCepService', function () {
 
             $result = $this->service->getAddressByCep($cep);
 
-            expect($result['cep'])->toBe('01310-100');
+            expect($result['cep'])->toBe('01310100');
         });
     });
 
