@@ -15,7 +15,7 @@ BLUE = \033[0;34m
 RED = \033[0;31m
 NC = \033[0m # No Color
 
-.PHONY: help install start stop restart status logs logs-app logs-db logs-nginx shell root-shell artisan migrate migrate-fresh seed migrate-seed tinker route-list cache-clear optimize composer composer-install composer-update test test-pest test-services test-unit test-feature test-coverage test-watch health db-shell redis-shell clean reset info ports
+.PHONY: help install start stop restart status logs logs-app logs-db logs-nginx shell root-shell artisan migrate migrate-fresh seed migrate-seed tinker route-list cache-clear optimize composer composer-install composer-update test test-pest test-services test-unit test-feature test-coverage test-watch frontend frontend-build frontend-watch npm-install health db-shell redis-shell clean reset info ports
 
 # Default target
 .DEFAULT_GOAL := help
@@ -159,9 +159,27 @@ test-coverage: ## Executa testes com cobertura
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) ./vendor/bin/pest --coverage
 
 test-watch: ## Executa testes em modo watch (observação)
-	@echo "$(BLUE) Executando testes em modo watch...$(NC)"
+	@echo "$(BLUE)👀 Executando testes em modo watch...$(NC)"
 	@echo "$(YELLOW)💡 Pressione Ctrl+C para parar$(NC)"
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) ./vendor/bin/pest --watch
+
+## FRONTEND
+
+npm-install: ## Instala dependências do Node.js
+	@echo "$(BLUE)📦 Instalando dependências do Node.js...$(NC)"
+	@npm install
+
+frontend: ## Inicia servidor de desenvolvimento (Vite)
+	@echo "$(BLUE)🚀 Iniciando servidor de desenvolvimento...$(NC)"
+	@npm run dev
+
+frontend-build: ## Compila assets para produção
+	@echo "$(BLUE)🏗️  Compilando assets para produção...$(NC)"
+	@npm run build
+
+frontend-watch: ## Observa mudanças nos arquivos frontend
+	@echo "$(BLUE)👀 Observando mudanças no frontend...$(NC)"
+	@npm run dev
 
 ## FERRAMENTAS
 
