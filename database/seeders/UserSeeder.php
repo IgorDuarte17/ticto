@@ -12,13 +12,12 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Criar um administrador padrão
         $admin = \App\Models\User::create([
-            'name' => 'Administrador Principal',
+            'name' => 'Administrador',
             'cpf' => '12345678901',
             'email' => 'admin@ticto.com',
-            'password' => bcrypt('admin123'),
-            'position' => 'Gerente Geral',
+            'password' => bcrypt('password'),
+            'position' => 'Gerente',
             'birth_date' => '1985-05-15',
             'cep' => '01310100',
             'street' => 'Av. Paulista',
@@ -31,16 +30,33 @@ class UserSeeder extends Seeder
             'manager_id' => null,
         ]);
 
-        // Criar alguns funcionários de exemplo
-        \App\Models\User::create([
-            'name' => 'João Silva Santos',
-            'cpf' => '98765432100',
-            'email' => 'joao@ticto.com',
-            'password' => bcrypt('123456'),
+        $employee = \App\Models\User::create([
+            'name' => 'João Silva',
+            'cpf' => '22222222222',
+            'email' => 'employee@ticto.com',
+            'password' => bcrypt('password'),
             'position' => 'Desenvolvedor',
-            'birth_date' => '1990-03-20',
+            'birth_date' => '1992-12-10',
             'cep' => '04567890',
             'street' => 'Rua das Flores',
+            'number' => '100',
+            'complement' => 'Apto 101',
+            'neighborhood' => 'Vila Madalena',
+            'city' => 'São Paulo',
+            'state' => 'SP',
+            'role' => 'employee',
+            'manager_id' => $admin->id,
+        ]);
+
+        \App\Models\User::create([
+            'name' => 'Maria Santos',
+            'cpf' => '98765432100',
+            'email' => 'maria@ticto.com',
+            'password' => bcrypt('password'),
+            'position' => 'Analista',
+            'birth_date' => '1990-03-20',
+            'cep' => '04567890',
+            'street' => 'Rua das Palmeiras',
             'number' => '123',
             'complement' => 'Apto 45',
             'neighborhood' => 'Vila Madalena',
@@ -51,11 +67,11 @@ class UserSeeder extends Seeder
         ]);
 
         \App\Models\User::create([
-            'name' => 'Maria Oliveira Costa',
+            'name' => 'Pedro Costa',
             'cpf' => '11122233344',
-            'email' => 'maria@ticto.com',
-            'password' => bcrypt('123456'),
-            'position' => 'Analista',
+            'email' => 'pedro@ticto.com',
+            'password' => bcrypt('password'),
+            'position' => 'Designer',
             'birth_date' => '1988-07-10',
             'cep' => '05678901',
             'street' => 'Av. Rebouças',
@@ -68,7 +84,6 @@ class UserSeeder extends Seeder
             'manager_id' => $admin->id,
         ]);
 
-        // Criar alguns registros de ponto de exemplo
         $employees = \App\Models\User::where('role', 'employee')->get();
         
         foreach ($employees as $employee) {

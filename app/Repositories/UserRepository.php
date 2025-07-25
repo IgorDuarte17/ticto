@@ -66,6 +66,10 @@ class UserRepository implements UserRepositoryInterface
             $query->where('manager_id', $filters['manager_id']);
         }
         
+        if (isset($filters['position']) && !empty($filters['position'])) {
+            $query->where('position', $filters['position']);
+        }
+        
         if (isset($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
