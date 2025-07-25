@@ -37,8 +37,8 @@ class ViaCepService
             }
 
             return [
-                'cep' => $data['cep'] ?? $cep,
-                'address' => $data['logradouro'] ?? '',
+                'cep' => $cep,
+                'street' => $data['logradouro'] ?? '',
                 'neighborhood' => $data['bairro'] ?? '',
                 'city' => $data['localidade'] ?? '',
                 'state' => $data['uf'] ?? '',
