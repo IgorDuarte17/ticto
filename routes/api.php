@@ -6,10 +6,14 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\TimeRecordController;
+use App\Http\Controllers\Api\ViaCepController;
 
 // Health check endpoints
 Route::get('/health', [HealthController::class, 'check']);
 Route::get('/phpinfo', [HealthController::class, 'phpinfo']);
+
+Route::get('/via-cep/{cep}', [ViaCepController::class, 'getAddress'])
+    ->where('cep', '[0-9]{8}');
 
 // Authentication routes
 Route::prefix('auth')->group(function () {
@@ -24,8 +28,8 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Employee management (Admin and Managers only)
-    Route::prefix('employees')->middleware('role:admin,manager')->group(function () {
+    // Employee management
+    Route::prefix('employees')->middleware('role:admin')->group(function () {
         Route::get('/', [EmployeeController::class, 'index']);
         Route::post('/', [EmployeeController::class, 'store']);
         Route::get('/{id}', [EmployeeController::class, 'show']);
@@ -33,7 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [EmployeeController::class, 'destroy']);
     });
 
-    // CEP search (available for all authenticated users)
+    // CEP search
     Route::post('/search-cep', [EmployeeController::class, 'searchCep']);
 
     // Time record management
@@ -43,7 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/today', [TimeRecordController::class, 'todayRecords']);
         Route::get('/can-record', [TimeRecordController::class, 'canRecord']);
         
-        // Admin/Manager routes
-        Route::get('/', [TimeRecordController::class, 'index'])->middleware('role:admin,manager');
+        // Admin routes
+        Route::get('/', [TimeRecordController::class, 'index'])->middleware('role:admin');
     });
 });
