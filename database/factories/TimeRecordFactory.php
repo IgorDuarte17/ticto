@@ -17,9 +17,13 @@ class TimeRecordFactory extends Factory
      */
     public function definition(): array
     {
+        $timezone = new \DateTimeZone(config('app.timezone'));
+        $recordedAt = $this->faker->dateTimeBetween('-1 month', 'now');
+        $recordedAt->setTimezone($timezone);
+        
         return [
             'user_id' => User::factory(),
-            'recorded_at' => $this->faker->dateTimeBetween('-1 month', 'now')->setTimezone(config('app.timezone')),
+            'recorded_at' => $recordedAt,
         ];
     }
 
@@ -29,7 +33,7 @@ class TimeRecordFactory extends Factory
     public function today(): static
     {
         return $this->state(fn (array $attributes) => [
-            'recorded_at' => now()->setTimezone(config('app.timezone')),
+            'recorded_at' => now(config('app.timezone')),
         ]);
     }
 
