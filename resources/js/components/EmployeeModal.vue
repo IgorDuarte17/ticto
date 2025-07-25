@@ -343,10 +343,6 @@ const searchCep = async () => {
 }
 
 const handleSubmit = async () => {
-  console.log('=== INÍCIO SUBMISSÃO FORMULÁRIO ===')
-  console.log('Dados do formulário:', form)
-  console.log('É edição?', isEditing.value)
-  console.log('Employee prop:', props.employee)
   
   errors.value = {}
   errorMessage.value = ''
@@ -354,7 +350,7 @@ const handleSubmit = async () => {
 
   try {
     const data = { ...form }
-    console.log('Dados preparados para envio:', data)
+
     
     const requiredFields = ['name', 'email', 'cpf', 'position', 'birth_date', 'cep', 'street', 'number', 'neighborhood', 'city', 'state']
     
@@ -370,13 +366,13 @@ const handleSubmit = async () => {
       return false
     })
     
-    console.log('Campos obrigatórios:', requiredFields)
-    console.log('Verificando cada campo:')
+
+
     requiredFields.forEach(field => {
       const value = data[field]
-      console.log(`  ${field}:`, value, `(tipo: ${typeof value}, vazio: ${!value || (typeof value === 'string' && value.trim() === '')})`)
+  
     })
-    console.log('Campos em falta:', missingFields)
+
     
     if (missingFields.length > 0) {
       const fieldLabels = {
@@ -399,7 +395,7 @@ const handleSubmit = async () => {
         errorObj[field] = [`${fieldLabels[field]} é obrigatório`]
       })
       
-      console.log('Erros de validação frontend:', errorObj)
+  
       errors.value = errorObj
       notificationStore.error('Por favor, preencha todos os campos obrigatórios')
       loading.value = false
@@ -408,14 +404,14 @@ const handleSubmit = async () => {
     
     const originalCpf = data.cpf
     data.cpf = data.cpf.replace(/\D/g, '')
-    console.log('CPF original:', originalCpf, '-> CPF sem máscara:', data.cpf)
+
     
     const originalCep = data.cep
     data.cep = data.cep.replace(/\D/g, '')
-    console.log('CEP original:', originalCep, '-> CEP sem máscara:', data.cep)
+
     
     if (data.cpf.length !== 11) {
-      console.log('Erro: CPF inválido (comprimento)', data.cpf.length)
+  
       errors.value = { cpf: ['CPF deve conter 11 dígitos'] }
       notificationStore.error('CPF inválido')
       loading.value = false
@@ -423,7 +419,7 @@ const handleSubmit = async () => {
     }
     
     if (data.cep.length !== 8) {
-      console.log('Erro: CEP inválido (comprimento)', data.cep.length)
+  
       errors.value = { cep: ['CEP deve conter 8 dígitos'] }
       notificationStore.error('CEP inválido')
       loading.value = false
@@ -431,44 +427,44 @@ const handleSubmit = async () => {
     }
     
     if (!isEditing.value && data.password && data.password.length < 8) {
-      console.log('Erro: Senha muito curta', data.password.length)
+  
       errors.value = { password: ['A senha deve ter pelo menos 8 caracteres'] }
       notificationStore.error('A senha deve ter pelo menos 8 caracteres')
       loading.value = false
       return
     }
     
-    console.log('Dados finais para envio:', data)
+
     
     let result
     if (isEditing.value) {
-      console.log('Chamando updateEmployee com ID:', props.employee.id)
+  
       if (!data.password) {
         delete data.password
-        console.log('Senha removida (estava vazia)')
+    
       }
       result = await employeeStore.updateEmployee(props.employee.id, data)
     } else {
-      console.log('Chamando createEmployee')
+  
       result = await employeeStore.createEmployee(data)
     }
 
-    console.log('Resultado da operação:', result)
+
 
     if (result.success) {
-      console.log('Sucesso! Fechando modal.')
+  
       notificationStore.success(
         isEditing.value ? 'Funcionário atualizado com sucesso!' : 'Funcionário criado com sucesso!'
       )
       emit('saved')
     } else {
-      console.log('Falha na operação:', result)
+  
       if (result.errors) {
-        console.log('Erros de validação do backend:', result.errors)
+    
         errors.value = result.errors
         notificationStore.error('Por favor, corrija os erros no formulário')
       } else {
-        console.log('Erro sem detalhes específicos:', result.message)
+    
         errorMessage.value = result.message
         notificationStore.error(result.message || 'Erro ao salvar funcionário')
       }
@@ -483,7 +479,7 @@ const handleSubmit = async () => {
     errorMessage.value = 'Erro inesperado. Tente novamente.'
     notificationStore.error('Erro inesperado. Tente novamente.')
   } finally {
-    console.log('=== FIM SUBMISSÃO FORMULÁRIO ===')
+
     loading.value = false
   }
 }

@@ -81,21 +81,15 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const initialize = async () => {
-    console.log('Inicializando autenticação...')
-    console.log('Token armazenado:', !!token.value)
-    console.log('Usuário armazenado:', !!user.value)
     
     if (token.value) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
       
       if (!user.value) {
-        console.log('Buscando dados do usuário da API...')
         await fetchUser()
       } else {
-        console.log('Dados do usuário encontrados no localStorage')
       }
     } else {
-      console.log('Nenhum token encontrado - usuário não autenticado')
     }
   }
 

@@ -66,18 +66,14 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
   if (authStore.token && !authStore.user) {
-    console.log('Aguardando inicialização da autenticação...')
     await authStore.initialize()
   }
   
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('Redirecionando para login - não autenticado')
     next('/login')
   } else if (to.meta.guest && authStore.isAuthenticated) {
-    console.log('Redirecionando para dashboard - já autenticado')
     next('/')
   } else if (to.meta.requiresRole && !to.meta.requiresRole.includes(authStore.user?.role)) {
-    console.log('Redirecionando para dashboard - sem permissão para', to.meta.requiresRole)
     next('/')
   } else {
     next()

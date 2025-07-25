@@ -14,28 +14,20 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    console.log('API Request:', config.method?.toUpperCase(), config.url, config.data)
     return config
   },
   (error) => {
-    console.error('API Request Error:', error)
     return Promise.reject(error)
   }
 )
 
 api.interceptors.response.use(
   (response) => {
-    console.log('API Response:', response.status, response.config.url, response.data)
     return response
   },
   (error) => {
-    console.error('API Response Error:', error)
-    console.error('Error status:', error.response?.status)
-    console.error('Error data:', error.response?.data)
-    console.error('Error config:', error.config)
     
     if (error.response?.status === 401) {
-      console.log('Token expirado, redirecionando para login')
       localStorage.removeItem('token')
       window.location.href = '/login'
     }

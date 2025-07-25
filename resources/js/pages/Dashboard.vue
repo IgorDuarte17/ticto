@@ -222,10 +222,6 @@ const updateCurrentTime = () => {
 }
 
 const recordTime = async () => {
-  console.log('=== INÍCIO REGISTRO DE PONTO ===')
-  console.log('Usuário autenticado:', authStore.user)
-  console.log('É funcionário?', authStore.isEmployee)
-  console.log('Pode registrar?', canRecord.value)
   
   if (!authStore.isEmployee) {
     alert('Apenas funcionários podem registrar ponto!')
@@ -237,12 +233,9 @@ const recordTime = async () => {
     return
   }
   
-  console.log('Iniciando registro...')
   const result = await timeRecordStore.recordTime()
-  console.log('Resultado do registro:', result)
   
   if (result.success) {
-    console.log('Sucesso! Atualizando dados...')
     await checkCanRecord()
     await timeRecordStore.fetchTodayRecords()
     await loadRecentRecords()
@@ -252,7 +245,6 @@ const recordTime = async () => {
     alert('❌ Erro: ' + (result.message || 'Erro ao registrar ponto'))
   }
   
-  console.log('=== FIM REGISTRO DE PONTO ===')
 }
 
 const checkCanRecord = async () => {
@@ -263,19 +255,15 @@ const checkCanRecord = async () => {
 }
 
 const loadRecentRecords = async () => {
-  console.log('=== CARREGANDO REGISTROS RECENTES ===')
   try {
     if (authStore.isEmployee) {
-      console.log('Carregando registros do funcionário...')
       const result = await timeRecordStore.getFormattedRecords({ per_page: 5 })
-      console.log('Resultado registros funcionário:', result)
       recentRecords.value = (result.data || []).map(record => ({
         ...record,
         employee_name: record.user?.name || authStore.user?.name,
         position: record.user?.position || authStore.user?.position
       }))
     } else {
-      console.log('Carregando registros de todos (admin)...')
       await timeRecordStore.fetchRecords({ per_page: 5, sort: 'recorded_at', order: 'desc' })
       recentRecords.value = timeRecordStore.records.map(record => ({
         ...record,
@@ -284,7 +272,6 @@ const loadRecentRecords = async () => {
       }))
     }
     
-    console.log('Registros recentes carregados:', recentRecords.value)
   } catch (error) {
     console.error('Erro ao carregar registros recentes:', error)
     recentRecords.value = []
@@ -326,7 +313,6 @@ const formatDateTime = (datetime) => {
   try {
     if (!datetime) return 'Data inválida'
     
-    console.log('Formatando datetime:', datetime, 'tipo:', typeof datetime)
     
     let date
     
@@ -356,7 +342,6 @@ const formatDateTime = (datetime) => {
       minute: '2-digit'
     })
     
-    console.log('Data formatada:', formatted)
     return formatted
     
   } catch (error) {

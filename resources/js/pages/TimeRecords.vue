@@ -252,18 +252,13 @@ const todayRecords = computed(() => timeRecordStore.todayRecords)
 const employees = computed(() => employeeStore.employees)
 
 const searchRecords = async () => {
-  console.log('=== CARREGANDO REGISTROS ===')
-  console.log('Filtros:', filters.value)
-  console.log('É funcionário?', authStore.isEmployee)
   
   filters.value.page = 1
   
   if (authStore.isEmployee) {
     const result = await timeRecordStore.getFormattedRecords(filters.value)
-    console.log('Resultado my-records:', result)
   } else {
     await timeRecordStore.fetchRecords(filters.value)
-    console.log('Resultado admin records:', timeRecordStore.records)
   }
 }
 

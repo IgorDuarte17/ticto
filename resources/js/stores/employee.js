@@ -21,12 +21,9 @@ export const useEmployeeStore = defineStore('employee', () => {
   }
 
   const createEmployee = async (employeeData) => {
-    console.log('=== EMPLOYEE STORE: CREATE ===')
-    console.log('Dados recebidos:', employeeData)
     
     try {
       const response = await api.post('/employees', employeeData)
-      console.log('Resposta da API (create):', response)
       employees.value.push(response.data)
       return { success: true }
     } catch (error) {
@@ -44,13 +41,9 @@ export const useEmployeeStore = defineStore('employee', () => {
   }
 
   const updateEmployee = async (id, employeeData) => {
-    console.log('=== EMPLOYEE STORE: UPDATE ===')
-    console.log('ID:', id)
-    console.log('Dados recebidos:', employeeData)
     
     try {
       const response = await api.put(`/employees/${id}`, employeeData)
-      console.log('Resposta da API (update):', response)
       
       const index = employees.value.findIndex(emp => emp.id === id)
       if (index !== -1) {

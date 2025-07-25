@@ -12,7 +12,6 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
     loading.value = true
     try {
       const response = await api.get('/time-records', { params })
-      console.log('fetchRecords response:', response.data)
       
       if (response.data.data) {
         records.value = response.data.data
@@ -25,7 +24,6 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
         pagination.value = {}
       }
       
-      console.log('Records atualizados:', records.value)
     } catch (error) {
       console.error('Erro ao buscar registros:', error)
       records.value = []
@@ -51,7 +49,6 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
   const fetchTodayRecords = async () => {
     try {
       const response = await api.get('/time-records/today')
-      console.log('fetchTodayRecords response:', response.data)
       
       if (response.data.data) {
         todayRecords.value = response.data.data
@@ -61,7 +58,6 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
         todayRecords.value = []
       }
       
-      console.log('Today records atualizados:', todayRecords.value)
     } catch (error) {
       console.error('Erro ao buscar registros de hoje:', error)
       todayRecords.value = []
@@ -99,7 +95,6 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
       const endpoint = '/time-records/my-records'
       const response = await api.get(endpoint, { params })
       
-      console.log('Resposta da API:', response.data)
       
       records.value = response.data.data || []
       
@@ -111,8 +106,6 @@ export const useTimeRecordStore = defineStore('timeRecord', () => {
         pagination.value = {}
       }
       
-      console.log('Records atualizados:', records.value)
-      console.log('Pagination:', pagination.value)
       
       return response.data
     } catch (error) {
