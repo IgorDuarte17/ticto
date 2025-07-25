@@ -45,7 +45,9 @@ class TimeRecordController extends Controller
             $filters = array_filter($request->validated());
 
             $user = $request->user();
-            if ($user->role !== 'admin') {
+            if ($user->role === 'employee') {
+                $filters['user_id'] = $user->id;
+            } elseif ($user->role === 'manager') {
                 $filters['manager_id'] = $user->id;
             }
 
@@ -114,7 +116,13 @@ class TimeRecordController extends Controller
 
     public function todayRecords(Request $request)
     {
-        $records = $this->timeRecordService->getTodayRecordsByUser($request->user()->id);
+        $user = $request->user();
+        
+        if ($user->role === 'admin') {
+            $records = $this->timeRecordService->getAllTodayRecords();
+        } else {
+            $records = $this->timeRecordService->getTodayRecordsByUser($user->id);
+        }
 
         return response()->json([
             'message' => 'Registros de hoje',
@@ -122,7 +130,7 @@ class TimeRecordController extends Controller
             'data' => TimeRecordResource::collection($records),
             'meta' => [
                 'total_records' => $records->count(),
-                'date' => now()->format('d/m/Y'),
+                'date' => now()->format('d/m/Y')
             ]
         ]);
     }
