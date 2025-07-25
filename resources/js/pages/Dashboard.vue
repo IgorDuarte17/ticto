@@ -63,10 +63,6 @@
               <p v-if="!canRecord && recordStatus.message" class="mt-2 text-sm text-orange-600 bg-orange-50 p-2 rounded">
                 {{ recordStatus.message }}
               </p>
-              
-              <p v-if="recordStatus.next_allowed_at" class="text-xs text-gray-500 mt-1">
-                Próximo registro: {{ formatNextAllowedTime(recordStatus.next_allowed_at) }}
-              </p>
             </div>
           </div>
         </div>
@@ -199,7 +195,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useTimeRecordStore } from '../stores/timeRecord'
 import { useEmployeeStore } from '../stores/employee'
@@ -219,12 +215,16 @@ const todayRecordsCount = computed(() => todayRecords.value.length)
 
 const updateCurrentTime = () => {
   const now = new Date()
-  currentTime.value = now.toLocaleTimeString('pt-BR')
+  currentTime.value = now.toLocaleTimeString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
 }
 
 const recordTime = async () => {
   if (isProcessingRecord.value) {
-    console.log('🔵 Já processando, ignorando clique')
     return
   }
   
@@ -266,7 +266,7 @@ const recordTime = async () => {
       }
       
       alert('❌ Erro: ' + errorMessage)
-      await checkCanRecord() // Recarregar o estado real
+      await checkCanRecord()
     }
     
   } catch (error) {
@@ -296,7 +296,7 @@ const checkCanRecord = async () => {
         
         setTimeout(async () => {
           await checkCanRecord()
-        }, waitTime + 1000) // +1 segundo para garantir
+        }, waitTime + 1000)
       }
     }
   }
@@ -422,6 +422,19 @@ const formatNextAllowedTime = (timeString) => {
 }
 
 let timeInterval
+
+watch(() => authStore.user?.id, (newUserId, oldUserId) => {
+  if (newUserId && oldUserId && newUserId !== oldUserId) {
+    canRecord.value = false
+    recordStatus.value = {}
+    isProcessingRecord.value = false
+    recentRecords.value = []
+    
+    checkCanRecord()
+    timeRecordStore.fetchTodayRecords()
+    loadRecentRecords()
+  }
+})
 
 onMounted(async () => {
   updateCurrentTime()

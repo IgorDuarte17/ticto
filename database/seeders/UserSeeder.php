@@ -88,7 +88,7 @@ class UserSeeder extends Seeder
         
         foreach ($employees as $employee) {
             // Registros dos últimos 5 dias
-            for ($i = 4; $i >= 0; $i--) {
+            for ($i = 4; $i >= 1; $i--) {
                 $date = now()->subDays($i);
                 
                 // Entrada pela manhã
