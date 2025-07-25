@@ -154,6 +154,25 @@ make test-coverage   # Testes com coverage
 make test-watch      # Testes em watch mode
 ```
 
+### 🗄️ Cache Redis
+```bash
+make cache-clear                    # Limpar todos os caches do Laravel
+make cache-time-records-clear       # Limpar cache de registros de ponto
+make cache-time-records-stats       # Ver estatísticas do cache
+make cache-time-records-user USER_ID=123  # Limpar cache de usuário específico
+```
+
+**Cache de Performance para TimeRecords:**
+- Cache automático de consultas paginadas (30 min)
+- Cache de registros do dia (5 min)
+- Cache de status de registro (1 min)
+- Cache de relatórios (2 horas)
+- Invalidação automática ao registrar ponto
+
+**Endpoints de Monitoramento (Admin):**
+- `GET /api/cache/stats` - Estatísticas do cache
+- `DELETE /api/cache/clear` - Limpar cache via API
+
 ## 🔧 Configuração
 
 As principais configurações estão no arquivo `.env` que é criado automaticamente pelo script de setup.
