@@ -99,6 +99,7 @@ resources/js/
 ## 🌐 Acessos
 
 - **Aplicação**: http://localhost:8000
+- **API Swagger**: http://localhost:8000/api/documentation
 - **MySQL**: localhost:3306
   - Database: `ticto`
   - Username: `ticto`
@@ -134,6 +135,13 @@ make migrate-seed    # Migrar + seed (setup completo)
 make artisan cmd="route:list"  # Comandos Artisan
 make tinker          # Laravel Tinker
 ```
+
+### 📝 Documentação API (Swagger)
+```bash
+make swagger-generate    # Gerar documentação Swagger
+make swagger-publish     # Publicar configuração Swagger
+```
+**URL:** http://localhost:8080/api/documentation
 
 ### 🧪 Testes
 ```bash

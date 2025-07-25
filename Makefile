@@ -15,7 +15,7 @@ BLUE = \033[0;34m
 RED = \033[0;31m
 NC = \033[0m # No Color
 
-.PHONY: help install start stop restart status logs logs-app logs-db logs-nginx shell root-shell artisan migrate migrate-fresh seed migrate-seed tinker route-list cache-clear optimize composer composer-install composer-update test test-pest test-services test-unit test-feature test-coverage test-watch frontend frontend-build frontend-watch npm-install health db-shell redis-shell clean reset info ports
+.PHONY: help install start stop restart status logs logs-app logs-db logs-nginx shell root-shell artisan migrate migrate-fresh seed migrate-seed tinker route-list cache-clear swagger-generate swagger-publish optimize composer composer-install composer-update test test-pest test-services test-unit test-feature test-coverage test-watch frontend frontend-build frontend-watch npm-install health db-shell redis-shell clean reset info ports
 
 # Default target
 .DEFAULT_GOAL := help
@@ -118,6 +118,17 @@ cache-clear: ## Limpa todos os caches
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan config:clear
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan route:clear
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan view:clear
+
+## DOCUMENTAÇÃO API
+
+swagger-generate: ## Gera documentação Swagger
+	@echo "$(BLUE) Gerando documentação Swagger...$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan l5-swagger:generate
+	@echo "$(GREEN)✅ Documentação gerada! Acesse: http://localhost:8080/api/documentation$(NC)"
+
+swagger-publish: ## Publica configuração do Swagger
+	@echo "$(BLUE) Publicando configuração Swagger...$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"
 
 ## COMPOSER
 
