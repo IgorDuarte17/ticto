@@ -313,4 +313,25 @@ class TimeRecordCacheService
             ];
         }
     }
+
+    /**
+     * Invalida apenas o cache de paginação (usado na listagem de registros)
+     */
+    public function invalidatePaginationCache(): void
+    {
+        try {
+            if (config('cache.default') === 'array') {
+                Cache::flush();
+                Log::info("Cache de paginação invalidado (array driver - cache completo limpo)");
+                return;
+            }
+            
+            $pattern = self::CACHE_PREFIX . ':pagination:*';
+            $this->invalidateCachePattern($pattern);
+            
+            Log::info("Cache de paginação invalidado", ['pattern' => $pattern]);
+        } catch (\Exception $e) {
+            Log::error("Erro ao invalidar cache de paginação", ['error' => $e->getMessage()]);
+        }
+    }
 }

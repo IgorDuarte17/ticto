@@ -56,8 +56,7 @@ describe('TimeRecordService', function () {
                 ->andReturn($expectedRecord);
 
             $this->cacheService
-                ->shouldReceive('invalidateUserCache')
-                ->with($userId)
+                ->shouldReceive('invalidatePaginationCache')
                 ->once();
 
             $result = $this->service->recordTime($userId);
@@ -187,18 +186,6 @@ describe('TimeRecordService', function () {
                 'role' => 'employee'
             ]);
 
-            $this->cacheService
-                ->shouldReceive('getCanRecordCacheKey')
-                ->with($userId)
-                ->once()
-                ->andReturn('cache_key');
-
-            $this->cacheService
-                ->shouldReceive('getCanRecord')
-                ->with('cache_key')
-                ->once()
-                ->andReturn(null);
-
             $this->userRepository
                 ->shouldReceive('findById')
                 ->with($userId)
@@ -211,11 +198,6 @@ describe('TimeRecordService', function () {
                 ->once()
                 ->andReturn(null);
 
-            $this->cacheService
-                ->shouldReceive('cacheCanRecord')
-                ->with('cache_key', Mockery::type('array'), 60)
-                ->once();
-
             $result = $this->service->canRecordTime($userId);
 
             expect($result['can_record'])->toBeTrue();
@@ -224,18 +206,6 @@ describe('TimeRecordService', function () {
 
         it('should return false when user not found', function () {
             $userId = 999;
-
-            $this->cacheService
-                ->shouldReceive('getCanRecordCacheKey')
-                ->with($userId)
-                ->once()
-                ->andReturn('cache_key');
-
-            $this->cacheService
-                ->shouldReceive('getCanRecord')
-                ->with('cache_key')
-                ->once()
-                ->andReturn(null);
 
             $this->userRepository
                 ->shouldReceive('findById')
@@ -257,18 +227,6 @@ describe('TimeRecordService', function () {
                 'role' => 'admin'
             ]);
 
-            $this->cacheService
-                ->shouldReceive('getCanRecordCacheKey')
-                ->with($userId)
-                ->once()
-                ->andReturn('cache_key');
-
-            $this->cacheService
-                ->shouldReceive('getCanRecord')
-                ->with('cache_key')
-                ->once()
-                ->andReturn(null);
-
             $this->userRepository
                 ->shouldReceive('findById')
                 ->with($userId)
@@ -287,28 +245,11 @@ describe('TimeRecordService', function () {
             $userId = 1;
             $expectedCollection = new Collection([]);
 
-            $this->cacheService
-                ->shouldReceive('getTodayRecordsCacheKey')
-                ->with($userId)
-                ->once()
-                ->andReturn('cache_key');
-
-            $this->cacheService
-                ->shouldReceive('getTodayRecords')
-                ->with('cache_key')
-                ->once()
-                ->andReturn(null);
-
             $this->timeRecordRepository
                 ->shouldReceive('getTodayRecordsByUser')
                 ->with($userId)
                 ->once()
                 ->andReturn($expectedCollection);
-
-            $this->cacheService
-                ->shouldReceive('cacheTodayRecords')
-                ->with('cache_key', $expectedCollection)
-                ->once();
 
             $result = $this->service->getTodayRecordsByUser($userId);
 

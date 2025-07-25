@@ -46,7 +46,7 @@ class TimeRecordService
             'recorded_at' => now()
         ]);
         
-        $this->cacheService->invalidateUserCache($userId);
+        $this->cacheService->invalidatePaginationCache();
         
         return $timeRecord;
     }
@@ -123,18 +123,7 @@ class TimeRecordService
     
     public function getTodayRecordsByUser(int $userId): Collection
     {
-        $cacheKey = $this->cacheService->getTodayRecordsCacheKey($userId);
-        
-        $cachedResult = $this->cacheService->getTodayRecords($cacheKey);
-        if ($cachedResult !== null) {
-            return $cachedResult;
-        }
-        
-        $result = $this->timeRecordRepository->getTodayRecordsByUser($userId);
-        
-        $this->cacheService->cacheTodayRecords($cacheKey, $result);
-        
-        return $result;
+        return $this->timeRecordRepository->getTodayRecordsByUser($userId);
     }
     
     public function getLatestRecordByUser(int $userId): ?TimeRecord
@@ -174,71 +163,45 @@ class TimeRecordService
     
     public function canRecordTime(int $userId): array
     {
-        $cacheKey = $this->cacheService->getCanRecordCacheKey($userId);
-        
-        $cachedResult = $this->cacheService->getCanRecord($cacheKey);
-        if ($cachedResult !== null) {
-            return $cachedResult;
-        }
-        
         $user = $this->userRepository->findById($userId);
         
         if (!$user) {
-            $result = [
+            return [
                 'can_record' => false,
                 'message' => 'Usuário não encontrado.'
             ];
-            return $result;
         }
         
         if ($user->role !== 'employee') {
-            $result = [
+            return [
                 'can_record' => false,
                 'message' => 'Apenas funcionários podem registrar ponto.'
             ];
-            return $result;
         }
         
         $latestRecord = $this->timeRecordRepository->getLatestByUser($userId);
-        if ($latestRecord && $latestRecord->recorded_at->diffInMinutes(now()) < 1) {
-            $nextAllowed = $latestRecord->recorded_at->copy()
-                ->setTimezone('America/Sao_Paulo')
-                ->addMinutes(1);
-                
-            $result = [
-                'can_record' => false,
-                'message' => 'Aguarde 1 minuto antes de registrar novamente.',
-                'next_allowed_at' => $nextAllowed->format('H:i:s')
-            ];
+        if ($latestRecord) {
+            $minutesSinceLastRecord = $latestRecord->recorded_at->diffInMinutes(now());
             
-            // Cache por menos tempo quando não pode registrar
-            $this->cacheService->cacheCanRecord($cacheKey, $result, 30);
-            return $result;
+            if ($minutesSinceLastRecord < 1) {
+                $nextAllowedTime = $latestRecord->recorded_at->copy()->addMinute();
+                return [
+                    'can_record' => false,
+                    'message' => 'Aguarde 1 minuto antes de registrar novamente.',
+                    'next_allowed_at' => $nextAllowedTime->format('H:i:s'),
+                    'last_record_at' => $latestRecord->recorded_at->format('H:i:s')
+                ];
+            }
         }
         
-        $result = [
+        return [
             'can_record' => true,
             'message' => 'Você pode registrar seu ponto agora.'
         ];
-        
-        // Cache por 1 minuto quando pode registrar
-        $this->cacheService->cacheCanRecord($cacheKey, $result, 60);
-        return $result;
     }
 
     public function getAllTodayRecords(): Collection
     {
-        $cacheKey = $this->cacheService->getAllTodayRecordsCacheKey();
-        
-        $cachedResult = $this->cacheService->getTodayRecords($cacheKey);
-        if ($cachedResult !== null) {
-            return $cachedResult;
-        }
-        
-        $result = $this->timeRecordRepository->getAllTodayRecords();
-        
-        $this->cacheService->cacheTodayRecords($cacheKey, $result);
-        
-        return $result;
+        return $this->timeRecordRepository->getAllTodayRecords();
     }
 }
