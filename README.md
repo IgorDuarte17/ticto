@@ -1,32 +1,92 @@
-# Ticto - Laravel API
 
-Este é um projeto Laravel configurado com Docker, PHP 8.4, MySQL 8.4 e Redis 7.
+
+# Ticto - Sistema de Controle de Ponto
+
+Sistema completo de controle de ponto eletrônico com **API Laravel** e **Frontend Vue.js**.
+
+## 🚀 Stack Tecnológica
+
+### Backend (API)
+- **Laravel 12** - Framework PHP
+- **PHP 8.4** - Linguagem
+- **MySQL 8.4** - Banco de dados
+- **Redis 7** - Cache e sessões
+- **Laravel Sanctum** - Autenticação API
+- **Docker** - Containerização
+
+### Frontend (SPA)
+- **Vue 3** - Framework JavaScript
+- **Pinia** - Gerenciamento de estado
+- **Vue Router** - Roteamento
+- **TailwindCSS 4** - Styling
+- **Heroicons** - Ícones
+- **Axios** - Cliente HTTP
+- **Vite** - Build tool
+
+## 🎯 Funcionalidades
+
+### 🔐 Autenticação & Autorização
+- Login/logout seguro
+- Roles: Admin, Manager, Employee
+- Proteção de rotas por permissões
+- API com tokens JWT
+
+### 👥 Gestão de Funcionários
+- CRUD completo de funcionários
+- Busca automática de endereço via CEP
+- Filtros e busca avançada
+- Interface responsiva
+
+### ⏰ Controle de Ponto
+- Registro de entrada/saída/pausa
+- Validações de horários
+- Histórico de registros
+- Dashboard em tempo real
+
+### 📊 Interface Moderna
+- Design responsivo (mobile-first)
+- Notificações em tempo real
+- Loading states
+- Componentes reutilizáveis
 
 ## 🚀 Início Rápido
 
-### Primeira execução:
+### 1. Instalação Completa
 ```bash
 make install
 ```
 
-### Comandos principais:
-```bash
-make help        # Ver todos os comandos disponíveis
-make start       # Iniciar containers
-make stop        # Parar containers
-make status      # Ver status dos containers
-make logs        # Ver logs
-make shell       # Acessar container PHP
+### 2. Acessar a Aplicação
+- **Frontend**: http://localhost
+- **API**: http://localhost/api
+
+### 3. Login Padrão
+- **Gerente**: admin@ticto.com / password
+- **Funcionário**: employee@ticto.com / password
+
+
+
+## 🏗️ Arquitetura
+
+### Backend (API)
+```
+app/
+├── Http/Controllers/Api/  # Controllers da API
+├── Models/               # Models Eloquent
+├── Services/            # Services (business logic)
+├── Repositories/        # Repositories (data access)
+└── Contracts/          # Interfaces
 ```
 
-### Desenvolvimento Laravel:
-```bash
-make migrate                           # Executar migrações
-make artisan cmd="route:list"         # Comandos Artisan
-make make-controller name="ApiController"  # Criar controller
-make make-model name="User"           # Criar model
-make composer cmd="require package"   # Comandos Composer
-make test                             # Executar testes
+### Frontend (SPA)
+```
+resources/js/
+├── components/          # Componentes reutilizáveis
+├── pages/              # Páginas da aplicação
+├── stores/             # Stores Pinia (estado)
+├── services/           # Services HTTP
+├── router/             # Configuração de rotas
+└── App.vue            # Componente raiz
 ```
 
 ## 🐳 Serviços Docker
@@ -47,72 +107,43 @@ make test                             # Executar testes
 
 ## 📋 Comandos Úteis
 
-### Makefile (recomendado)
-Todos os comandos estão disponíveis através do Makefile:
+### 🐳 Docker & Aplicação
 ```bash
 make help          # Ver todos os comandos
-make examples      # Ver exemplos de uso
-make info          # Informações do ambiente
+make start         # Iniciar aplicação completa
+make stop          # Parar todos os serviços
+make restart       # Reiniciar aplicação
+make status        # Ver status dos containers
+make logs          # Ver logs de todos os serviços
 ```
 
-### Comandos Docker manuais (se necessário)
+### 🎨 Frontend (Vue.js)
 ```bash
-# Usar arquivo docker-compose específico
-docker-compose -f .setup/docker-compose.yml up -d
-docker-compose -f .setup/docker-compose.yml ps
-docker-compose -f .setup/docker-compose.yml logs
+make frontend          # Servidor de desenvolvimento Vite
+make frontend-build    # Build para produção
+make frontend-watch    # Watch mode para desenvolvimento
+make npm-install      # Instalar dependências npm
 ```
 
-### Laravel/Artisan
+### 🗄️ Backend (Laravel)
 ```bash
-# Usando Makefile (recomendado)
-make migrate
-make artisan cmd="make:controller ApiController"
-make artisan cmd="route:list"
-make tinker
-
-# Comando direto (alternativo)
-docker-compose -f .setup/docker-compose.yml exec app php artisan [comando]
+make migrate          # Executar migrações
+make migrate-fresh    # Resetar banco e executar migrações
+make seed            # Executar seeders
+make migrate-seed    # Migrar + seed (setup completo)
+make artisan cmd="route:list"  # Comandos Artisan
+make tinker          # Laravel Tinker
 ```
 
-### Composer
+### 🧪 Testes
 ```bash
-# Usando Makefile (recomendado)
-make composer-install
-make composer cmd="require laravel/sanctum"
-make composer-update
-
-# Comando direto (alternativo)
-docker-compose -f .setup/docker-compose.yml exec app composer [comando]
-```
-
-### Banco de dados
-```bash
-# Usando Makefile (recomendado)
-make migrate
-make migrate-fresh
-make seed
-make migrate-seed
-make db-shell
-
-# Comandos diretos (alternativos)
-docker-compose -f .setup/docker-compose.yml exec app php artisan migrate
-docker-compose -f .setup/docker-compose.yml exec app php artisan migrate:fresh --seed
-```
-
-### Cache e otimização
-```bash
-# Limpar todos os caches
-docker-compose exec app php artisan optimize:clear
-
-# Otimizar para produção
-docker-compose exec app php artisan optimize
-
-# Cache de configuração
-docker-compose exec app php artisan config:cache
-
-# Cache de rotas
-docker-compose exec app php artisan route:cache
+make test            # Executar todos os testes
+make test-pest       # Executar testes Pest
+make test-services   # Testar apenas services
+make test-unit       # Testes unitários
+make test-feature    # Testes de feature
+make test-coverage   # Testes com coverage
+make test-watch      # Testes em watch mode
 ```
 
 ## 🔧 Configuração
@@ -141,76 +172,4 @@ As principais configurações estão no arquivo `.env` que é criado automaticam
 │   └── scripts/            # Scripts de automação
 ├── Makefile               # Comandos centralizados de desenvolvimento
 └── README.md              # Este arquivo
-```
-
-## 🛠️ Desenvolvimento
-
-### Criando uma API simples
-
-1. **Criar um controller:**
-   ```bash
-   docker-compose exec app php artisan make:controller Api/UserController --api
-   ```
-
-2. **Criar um model com migration:**
-   ```bash
-   docker-compose exec app php artisan make:model Task -m
-   ```
-
-3. **Adicionar rotas em `routes/api.php`:**
-   ```php
-   Route::apiResource('users', UserController::class);
-   ```
-
-4. **Executar migrations:**
-   ```bash
-   docker-compose exec app php artisan migrate
-   ```
-
-### Testando a API
-
-```bash
-# Listar rotas
-docker-compose exec app php artisan route:list
-
-# Testar com curl
-curl http://localhost:8000/api/users
-```
-
-## 🚨 Troubleshooting
-
-### Problemas de permissão
-```bash
-docker-compose exec app chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-docker-compose exec app chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-```
-
-### Recriar containers
-```bash
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-### Limpar dados do banco
-```bash
-docker-compose down
-docker volume rm ticto_mysql_data ticto_redis_data
-docker-compose up -d
-# Aguardar ~15 segundos
-docker-compose exec app php artisan migrate --force
-```
-
-### Erro de conexão com MySQL
-- Aguarde alguns segundos após `docker-compose up -d`
-- Verifique os logs: `docker-compose logs mysql`
-- Verifique se as configurações do `.env` estão corretas
-
-### Container não inicia
-```bash
-# Ver logs específicos
-docker-compose logs [nome-do-container]
-
-# Verificar status
-docker-compose ps
 ```
