@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\TimeRecordController;
 use App\Http\Controllers\Api\ViaCepController;
+use App\Http\Controllers\Api\CacheController;
 
 // Health check endpoints
 Route::get('/health', [HealthController::class, 'check']);
@@ -49,5 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Admin routes
         Route::get('/', [TimeRecordController::class, 'index'])->middleware('role:admin');
+    });
+    
+    // Cache management (admin only)
+    Route::prefix('cache')->middleware('role:admin')->group(function () {
+        Route::get('/stats', [CacheController::class, 'stats']);
+        Route::delete('/clear', [CacheController::class, 'clear']);
     });
 });

@@ -14,7 +14,8 @@ class TimeRecordService
 {
     public function __construct(
         private TimeRecordRepositoryInterface $timeRecordRepository,
-        private UserRepositoryInterface $userRepository
+        private UserRepositoryInterface $userRepository,
+        private TimeRecordCacheService $cacheService
     ) {}
     
     public function recordTime(int $userId): TimeRecord
@@ -40,10 +41,14 @@ class TimeRecordService
             ]);
         }
         
-        return $this->timeRecordRepository->create([
+        $timeRecord = $this->timeRecordRepository->create([
             'user_id' => $userId,
             'recorded_at' => now()
         ]);
+        
+        $this->cacheService->invalidateUserCache($userId);
+        
+        return $timeRecord;
     }
     
     public function getRecordsByUser(int $userId): Collection
@@ -84,6 +89,14 @@ class TimeRecordService
     
     public function getPaginatedRecords(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
+        $page = $filters['page'] ?? 1;
+        $cacheKey = $this->cacheService->getPaginationCacheKey($filters, $perPage, $page);
+        
+        $cachedResult = $this->cacheService->getPagedRecords($cacheKey);
+        if ($cachedResult !== null) {
+            return $cachedResult;
+        }
+        
         if (isset($filters['start_date']) && isset($filters['end_date'])) {
             try {
                 Carbon::createFromFormat('Y-m-d', $filters['start_date']);
@@ -101,12 +114,27 @@ class TimeRecordService
             }
         }
         
-        return $this->timeRecordRepository->getPaginated($filters, $perPage);
+        $result = $this->timeRecordRepository->getPaginated($filters, $perPage);
+        
+        $this->cacheService->cachePagedRecords($cacheKey, $result);
+        
+        return $result;
     }
     
     public function getTodayRecordsByUser(int $userId): Collection
     {
-        return $this->timeRecordRepository->getTodayRecordsByUser($userId);
+        $cacheKey = $this->cacheService->getTodayRecordsCacheKey($userId);
+        
+        $cachedResult = $this->cacheService->getTodayRecords($cacheKey);
+        if ($cachedResult !== null) {
+            return $cachedResult;
+        }
+        
+        $result = $this->timeRecordRepository->getTodayRecordsByUser($userId);
+        
+        $this->cacheService->cacheTodayRecords($cacheKey, $result);
+        
+        return $result;
     }
     
     public function getLatestRecordByUser(int $userId): ?TimeRecord
@@ -146,20 +174,29 @@ class TimeRecordService
     
     public function canRecordTime(int $userId): array
     {
+        $cacheKey = $this->cacheService->getCanRecordCacheKey($userId);
+        
+        $cachedResult = $this->cacheService->getCanRecord($cacheKey);
+        if ($cachedResult !== null) {
+            return $cachedResult;
+        }
+        
         $user = $this->userRepository->findById($userId);
         
         if (!$user) {
-            return [
+            $result = [
                 'can_record' => false,
                 'message' => 'Usuário não encontrado.'
             ];
+            return $result;
         }
         
         if ($user->role !== 'employee') {
-            return [
+            $result = [
                 'can_record' => false,
                 'message' => 'Apenas funcionários podem registrar ponto.'
             ];
+            return $result;
         }
         
         $latestRecord = $this->timeRecordRepository->getLatestByUser($userId);
@@ -168,21 +205,40 @@ class TimeRecordService
                 ->setTimezone('America/Sao_Paulo')
                 ->addMinutes(1);
                 
-            return [
+            $result = [
                 'can_record' => false,
                 'message' => 'Aguarde 1 minuto antes de registrar novamente.',
                 'next_allowed_at' => $nextAllowed->format('H:i:s')
             ];
+            
+            // Cache por menos tempo quando não pode registrar
+            $this->cacheService->cacheCanRecord($cacheKey, $result, 30);
+            return $result;
         }
         
-        return [
+        $result = [
             'can_record' => true,
             'message' => 'Você pode registrar seu ponto agora.'
         ];
+        
+        // Cache por 1 minuto quando pode registrar
+        $this->cacheService->cacheCanRecord($cacheKey, $result, 60);
+        return $result;
     }
-    
+
     public function getAllTodayRecords(): Collection
     {
-        return $this->timeRecordRepository->getAllTodayRecords();
+        $cacheKey = $this->cacheService->getAllTodayRecordsCacheKey();
+        
+        $cachedResult = $this->cacheService->getTodayRecords($cacheKey);
+        if ($cachedResult !== null) {
+            return $cachedResult;
+        }
+        
+        $result = $this->timeRecordRepository->getAllTodayRecords();
+        
+        $this->cacheService->cacheTodayRecords($cacheKey, $result);
+        
+        return $result;
     }
 }
