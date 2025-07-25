@@ -27,7 +27,7 @@ Sistema completo de controle de ponto eletrônico com **API Laravel** e **Fronte
 
 ### 🔐 Autenticação & Autorização
 - Login/logout seguro
-- Roles: Admin, Manager, Employee
+- Roles: Admin, Employee
 - Proteção de rotas por permissões
 - API com tokens JWT
 
@@ -51,19 +51,14 @@ Sistema completo de controle de ponto eletrônico com **API Laravel** e **Fronte
 
 ## 🚀 Início Rápido
 
-### 1. Instalação Completa
+### Instalação Completa
 ```bash
 make install
 ```
 
-### 2. Acessar a Aplicação
-- **Frontend**: http://localhost
-- **API**: http://localhost/api
-
-### 3. Login Padrão
+### Login Padrão
 - **Gerente**: admin@ticto.com / password
 - **Funcionário**: employee@ticto.com / password
-
 
 
 ## 🏗️ Arquitetura
@@ -141,7 +136,7 @@ make tinker          # Laravel Tinker
 make swagger-generate    # Gerar documentação Swagger
 make swagger-publish     # Publicar configuração Swagger
 ```
-**URL:** http://localhost:8080/api/documentation
+**URL:** http://localhost:8000/api/documentation
 
 ### 🧪 Testes
 ```bash
