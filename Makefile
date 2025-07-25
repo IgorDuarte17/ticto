@@ -15,7 +15,7 @@ BLUE = \033[0;34m
 RED = \033[0;31m
 NC = \033[0m # No Color
 
-.PHONY: help install start stop restart status logs logs-app logs-db logs-nginx shell root-shell artisan migrate migrate-fresh seed migrate-seed tinker route-list cache-clear swagger-generate swagger-publish optimize composer composer-install composer-update test test-pest test-services test-unit test-feature test-coverage test-watch frontend frontend-build frontend-watch npm-install health db-shell redis-shell clean reset info ports
+.PHONY: help install start stop restart status logs logs-app logs-db logs-nginx shell root-shell artisan migrate migrate-fresh seed migrate-seed tinker route-list cache-clear cache-time-records-clear cache-time-records-stats cache-time-records-user swagger-generate swagger-publish optimize composer composer-install composer-update test test-pest test-services test-unit test-feature test-coverage test-watch frontend frontend-build frontend-watch npm-install health db-shell redis-shell clean reset info ports
 
 # Default target
 .DEFAULT_GOAL := help
@@ -118,6 +118,18 @@ cache-clear: ## Limpa todos os caches
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan config:clear
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan route:clear
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan view:clear
+
+cache-time-records-clear: ## Limpa cache de registros de ponto
+	@echo "$(YELLOW) Limpando cache de registros de ponto...$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan cache:clear-time-records
+
+cache-time-records-stats: ## Mostra estatísticas do cache de registros de ponto
+	@echo "$(BLUE) Estatísticas do cache de registros de ponto:$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan cache:clear-time-records --stats
+
+cache-time-records-user: ## Limpa cache de um usuário específico (requer USER_ID=123)
+	@echo "$(YELLOW) Limpando cache do usuário $(USER_ID)...$(NC)"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan cache:clear-time-records --user=$(USER_ID)
 
 ## DOCUMENTAÇÃO API
 
